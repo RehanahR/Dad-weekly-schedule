@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Schedule</title>
+<style>
+  :root{
+    --ink:#1c2b24;
+    --paper:#f6f4ee;
+    --line:#d8d2c2;
+    --accent:#0f4d3a;
+    --accent-soft:#e4efe9;
+    --alert:#8a3b2b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Georgia','Times New Roman',serif;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:1.5rem;
+    margin:0 0 4px;
+    font-weight:600;
+    letter-spacing:.2px;
+  }
+  .subtitle{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.85rem;
+    color:#5c6b62;
+    margin-bottom:26px;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px 18px 20px;
+    margin-bottom:16px;
+  }
+  .day-label{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.72rem;
+    color:var(--accent);
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .day-date{
+    font-size:1.05rem;
+    margin-bottom:14px;
+  }
+  .question{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.95rem;
+    margin-bottom:10px;
+    line-height:1.4;
+  }
+  .options{
+    display:flex;
+    gap:10px;
+    margin-bottom:4px;
+  }
+  .opt{
+    flex:1;
+    position:relative;
+  }
+  .opt input{
+    position:absolute;
+    opacity:0;
+    inset:0;
+    margin:0;
+    cursor:pointer;
+  }
+  .opt label{
+    display:block;
+    text-align:center;
+    padding:10px 6px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.88rem;
+    color:var(--ink);
+    cursor:pointer;
+    transition:background .12s, border-color .12s;
+  }
+  .opt input:checked + label{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent);
+    font-weight:600;
+  }
+  .details{
+    display:none;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px dashed var(--line);
+  }
+  .details.show{display:block;}
+  .field{margin-bottom:10px;}
+  .field label{
+    display:block;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.78rem;
+    color:#5c6b62;
+    margin-bottom:4px;
+  }
+  .field input[type="text"]{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.92rem;
+    background:#fbfaf6;
+  }
+  .field input[type="text"]:focus{outline:2px solid var(--accent);outline-offset:0;}
+  button#sendBtn{
+    width:100%;
+    padding:15px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  button#sendBtn:active{opacity:.85;}
+  .note{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.75rem;
+    color:#8a8577;
+    text-align:center;
+    margin-top:10px;
+    line-height:1.4;
+  }
+  .warn{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:.72rem;
+    color:var(--alert);
+    text-align:center;
+    margin-bottom:16px;
+    padding:8px 10px;
+    background:#f7ece9;
+    border-radius:4px;
+    display:none;
+  }
+  .warn.show{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Weekly Schedule</h1>
+  <div class="subtitle" id="weekRange">Loading week…</div>
+
+  <!-- Wednesday -->
+  <div class="card">
+    <div class="day-label">WEDNESDAY</div>
+    <div class="day-date" id="wedDate"></div>
+    <div class="question">Taekwondo training this evening?</div>
+    <div class="options">
+      <div class="opt"><input type="radio" name="wed" value="Yes" id="wedYes"><label for="wedYes">Yes</label></div>
+      <div class="opt"><input type="radio" name="wed" value="No" id="wedNo"><label for="wedNo">No</label></div>
+    </div>
+  </div>
+
+  <!-- Friday -->
+  <div class="card">
+    <div class="day-label">FRIDAY</div>
+    <div class="day-date" id="friDate"></div>
+    <div class="question">Working from home or in office?</div>
+    <div class="options">
+      <div class="opt"><input type="radio" name="fri" value="Work from home" id="friWfh"><label for="friWfh">Home</label></div>
+      <div class="opt"><input type="radio" name="fri" value="In office" id="friOff"><label for="friOff">Office</label></div>
+    </div>
+  </div>
+
+  <!-- Saturday -->
+  <div class="card">
+    <div class="day-label">SATURDAY</div>
+    <div class="day-date" id="satDate"></div>
+    <div class="question">Any taekwondo competitions or other activities?</div>
+    <div class="options">
+      <div class="opt"><input type="radio" name="sat" value="Yes" id="satYes" onchange="toggle('sat')"><label for="satYes">Yes</label></div>
+      <div class="opt"><input type="radio" name="sat" value="No" id="satNo" onchange="toggle('sat')"><label for="satNo">No</label></div>
+    </div>
+    <div class="details" id="satDetails">
+      <div class="field"><label>What is it</label><input type="text" id="satWhat" placeholder="e.g. Regional competition"></div>
+      <div class="field"><label>Where</label><input type="text" id="satWhere" placeholder="e.g. Leisure centre"></div>
+      <div class="field"><label>Timing</label><input type="text" id="satTime" placeholder="e.g. 9am–1pm"></div>
+    </div>
+  </div>
+
+  <!-- Sunday -->
+  <div class="card">
+    <div class="day-label">SUNDAY</div>
+    <div class="day-date" id="sunDate"></div>
+    <div class="question">Any taekwondo competitions or other activities?</div>
+    <div class="options">
+      <div class="opt"><input type="radio" name="sun" value="Yes" id="sunYes" onchange="toggle('sun')"><label for="sunYes">Yes</label></div>
+      <div class="opt"><input type="radio" name="sun" value="No" id="sunNo" onchange="toggle('sun')"><label for="sunNo">No</label></div>
+    </div>
+    <div class="details" id="sunDetails">
+      <div class="field"><label>What is it</label><input type="text" id="sunWhat" placeholder="e.g. Grading"></div>
+      <div class="field"><label>Where</label><input type="text" id="sunWhere" placeholder="e.g. Sports hall"></div>
+      <div class="field"><label>Timing</label><input type="text" id="sunTime" placeholder="e.g. 2pm–4pm"></div>
+    </div>
+  </div>
+
+  <button id="sendBtn" onclick="sendResponses()">Send responses</button>
+  <div class="note">Opens Mail with the answers pre-filled, addressed to both of you.</div>
+</div>
+
+<script>
+  // EDIT THIS: the email addresses the completed form gets sent to
+  const RECIPIENT_EMAILS = ["bobbir29@gmail.com", "rehanahrazak@outlook.com", "praz29@ntlworld.com","patar.itservices@gmail.com"];
+
+  const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  function fmt(d){
+    return dayNames[d.getDay()] + ", " + d.getDate() + " " + monthNames[d.getMonth()] + " " + d.getFullYear();
+  }
+  function shortFmt(d){
+    return d.getDate() + " " + monthNames[d.getMonth()];
+  }
+
+  function getWeekDates(){
+    const today = new Date();
+    const day = today.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diffToMonday);
+    const wed = new Date(monday); wed.setDate(monday.getDate()+2);
+    const fri = new Date(monday); fri.setDate(monday.getDate()+4);
+    const sat = new Date(monday); sat.setDate(monday.getDate()+5);
+    const sun = new Date(monday); sun.setDate(monday.getDate()+6);
+    return {monday, wed, fri, sat, sun};
+  }
+
+  const dates = getWeekDates();
+  document.getElementById('wedDate').textContent = fmt(dates.wed);
+  document.getElementById('friDate').textContent = fmt(dates.fri);
+  document.getElementById('satDate').textContent = fmt(dates.sat);
+  document.getElementById('sunDate').textContent = fmt(dates.sun);
+  document.getElementById('weekRange').textContent =
+    "Week of " + shortFmt(dates.wed) + " – " + shortFmt(dates.sun);
+
+  if (RECIPIENT_EMAILS.some(e => e.includes("EMAIL@example.com"))) {
+    document.getElementById('emailWarn').classList.add('show');
+  }
+
+  function toggle(day){
+    const yes = document.getElementById(day + 'Yes').checked;
+    const details = document.getElementById(day + 'Details');
+    details.classList.toggle('show', yes);
+  }
+
+  function val(name){
+    const el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : "(not answered)";
+  }
+
+  function buildMessage(){
+    const wed = val('wed');
+    const fri = val('fri');
+    const sat = val('sat');
+    const sun = val('sun');
+
+    let satLine = "Saturday (" + fmt(dates.sat) + "): " + sat;
+    if (sat === "Yes"){
+      satLine += "\n   What: " + (document.getElementById('satWhat').value || "(not filled in)");
+      satLine += "\n   Where: " + (document.getElementById('satWhere').value || "(not filled in)");
+      satLine += "\n   Timing: " + (document.getElementById('satTime').value || "(not filled in)");
+    }
+
+    let sunLine = "Sunday (" + fmt(dates.sun) + "): " + sun;
+    if (sun === "Yes"){
+      sunLine += "\n   What: " + (document.getElementById('sunWhat').value || "(not filled in)");
+      sunLine += "\n   Where: " + (document.getElementById('sunWhere').value || "(not filled in)");
+      sunLine += "\n   Timing: " + (document.getElementById('sunTime').value || "(not filled in)");
+    }
+
+    return "Weekly Schedule – " + document.getElementById('weekRange').textContent + "\n\n" +
+      "Wednesday (" + fmt(dates.wed) + "): Taekwondo training – " + wed + "\n\n" +
+      "Friday (" + fmt(dates.fri) + "): " + fri + "\n\n" +
+      satLine + "\n\n" +
+      sunLine;
+  }
+
+  function sendResponses(){
+    const text = buildMessage();
+    const subject = "Weekly Schedule – " + document.getElementById('weekRange').textContent;
+    const mailto = "mailto:" + encodeURIComponent(RECIPIENT_EMAILS.join(",")) +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(text);
+    window.location.href = mailto;
+  }
+</script>
+</body>
+</html>

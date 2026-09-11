@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weekly Schedule</title>
+<title>Dad's Weekly Schedule</title>
 <style>
   :root{
     --ink:#1c2b24;
@@ -131,6 +131,20 @@
     margin-top:6px;
   }
   button#sendBtn:active{opacity:.85;}
+  button#shareImgBtn{
+    width:100%;
+    padding:15px;
+    background:#fff;
+    color:var(--accent);
+    border:1.5px solid var(--accent);
+    border-radius:4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  button#shareImgBtn:active{opacity:.85;}
   .note{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     font-size:.75rem;
@@ -155,7 +169,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Weekly Schedule</h1>
+  <h1>Dad's Weekly Schedule</h1>
   <div class="subtitle" id="weekRange">Loading week…</div>
 
   <!-- Wednesday -->
@@ -190,7 +204,7 @@
       <div class="opt"><input type="radio" name="sat" value="No" id="satNo" onchange="toggle('sat')"><label for="satNo">No</label></div>
     </div>
     <div class="details" id="satDetails">
-      <div class="field"><label>Event</label><input type="text" id="satWhat" placeholder="e.g. Nationals"></div>
+      <div class="field"><label>Event</label><input type="text" id="satWhat" placeholder="e.g. National Poomsae Championships"></div>
       <div class="field"><label>Location</label><input type="text" id="satWhere" placeholder="e.g. Basingstoke"></div>
       <div class="field"><label>Timing</label><input type="text" id="satTime" placeholder="e.g. 9am–6pm"></div>
     </div>
@@ -212,8 +226,10 @@
     </div>
   </div>
 
-  <button id="sendBtn" onclick="sendResponses()">Send responses</button>
+  <button id="sendBtn" onclick="sendResponses()">Email answers</button>
+  <button id="shareImgBtn" onclick="shareGraphic()">Share as image (Select WhatsApp)</button>
 </div>
+<canvas id="cardCanvas" style="display:none;"></canvas>
 
 <script>
   // EDIT THIS: the email addresses the completed form gets sent to
@@ -285,16 +301,169 @@
       sunLine += "\n   Timing: " + (document.getElementById('sunTime').value || "(not filled in)");
     }
 
-    return "Weekly Schedule – " + document.getElementById('weekRange').textContent + "\n\n" +
+    return "Dad's Weekly Schedule – " + document.getElementById('weekRange').textContent + "\n\n" +
       "Wednesday (" + fmt(dates.wed) + "): Taekwondo training – " + wed + "\n\n" +
       "Friday (" + fmt(dates.fri) + "): " + fri + "\n\n" +
       satLine + "\n\n" +
       sunLine;
   }
 
+  function drawRoundedRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function truncate(ctx, text, maxWidth){
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    let t = text;
+    while (t.length > 1 && ctx.measureText(t + "…").width > maxWidth){
+      t = t.slice(0, -1);
+    }
+    return t + "…";
+  }
+
+  function collectCardData(){
+    const sat = val('sat');
+    const sun = val('sun');
+    return {
+      weekRange: document.getElementById('weekRange').textContent,
+      rows: [
+        { label: "WEDNESDAY", date: fmt(dates.wed), question: "Taekwondo training", value: val('wed') },
+        { label: "FRIDAY", date: fmt(dates.fri), question: "Work location", value: val('fri') },
+        { label: "SATURDAY", date: fmt(dates.sat), question: "Activity", value: sat,
+          details: sat === "Yes" ? [
+            "What: " + (document.getElementById('satWhat').value || "—"),
+            "Where: " + (document.getElementById('satWhere').value || "—"),
+            "Time: " + (document.getElementById('satTime').value || "—")
+          ] : null },
+        { label: "SUNDAY", date: fmt(dates.sun), question: "Activity", value: sun,
+          details: sun === "Yes" ? [
+            "What: " + (document.getElementById('sunWhat').value || "—"),
+            "Where: " + (document.getElementById('sunWhere').value || "—"),
+            "Time: " + (document.getElementById('sunTime').value || "—")
+          ] : null }
+      ]
+    };
+  }
+
+  function buildCardCanvas(data){
+    const W = 700, PAD = 40;
+    const rowHeaderH = 96;
+    const detailLineH = 26;
+    const rowGap = 16;
+
+    let H = 150; // title area
+    data.rows.forEach(r => {
+      H += rowHeaderH + (r.details ? r.details.length * detailLineH + 10 : 0) + rowGap;
+    });
+    H += 20;
+
+    const canvas = document.getElementById('cardCanvas');
+    const scale = 2; // sharper image
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // background
+    ctx.fillStyle = "#f6f4ee";
+    ctx.fillRect(0, 0, W, H);
+
+    // title
+    ctx.fillStyle = "#1c2b24";
+    ctx.font = "600 30px Georgia, 'Times New Roman', serif";
+    ctx.fillText("Dad's Weekly Schedule", PAD, 58);
+    ctx.fillStyle = "#5c6b62";
+    ctx.font = "16px -apple-system, sans-serif";
+    ctx.fillText(data.weekRange, PAD, 84);
+
+    let y = 120;
+    const cardW = W - PAD * 2;
+
+    data.rows.forEach(r => {
+      const detailsH = r.details ? r.details.length * detailLineH + 10 : 0;
+      const cardH = rowHeaderH + detailsH;
+
+      // card background
+      ctx.fillStyle = "#ffffff";
+      drawRoundedRect(ctx, PAD, y, cardW, cardH, 6);
+      ctx.fill();
+      ctx.strokeStyle = "#d8d2c2";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // day label
+      ctx.fillStyle = "#0f4d3a";
+      ctx.font = "700 13px -apple-system, sans-serif";
+      ctx.fillText(r.label, PAD + 20, y + 28);
+
+      // date
+      ctx.fillStyle = "#1c2b24";
+      ctx.font = "20px Georgia, serif";
+      ctx.fillText(r.date, PAD + 20, y + 54);
+
+      // question
+      ctx.fillStyle = "#5c6b62";
+      ctx.font = "15px -apple-system, sans-serif";
+      ctx.fillText(r.question, PAD + 20, y + 76);
+
+      // value badge
+      ctx.font = "700 16px -apple-system, sans-serif";
+      const badgeText = r.value;
+      const badgeW = ctx.measureText(badgeText).width + 28;
+      const badgeX = PAD + cardW - badgeW - 20;
+      const badgeY = y + 34;
+      const isPositive = badgeText === "Yes" || badgeText === "Work from home";
+      ctx.fillStyle = isPositive ? "#e4efe9" : "#efe9df";
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, 32, 16);
+      ctx.fill();
+      ctx.fillStyle = isPositive ? "#0f4d3a" : "#6b5f4a";
+      ctx.fillText(badgeText, badgeX + 14, badgeY + 21);
+
+      // details
+      if (r.details){
+        let dy = y + rowHeaderH - 4;
+        ctx.font = "14px -apple-system, sans-serif";
+        r.details.forEach(line => {
+          dy += detailLineH;
+          ctx.fillStyle = "#3a453f";
+          ctx.fillText(truncate(ctx, line, cardW - 40), PAD + 20, dy);
+        });
+      }
+
+      y += cardH + rowGap;
+    });
+
+    return canvas;
+  }
+
+  function shareGraphic(){
+    const data = collectCardData();
+    const canvas = buildCardCanvas(data);
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "weekly-schedule.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "Dad's Weekly Schedule", text: data.weekRange });
+          return;
+        } catch (err) {
+          return; // user cancelled
+        }
+      }
+      // Fallback: open the image so it can be long-pressed and saved/shared manually
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    }, "image/png");
+  }
+
   function sendResponses(){
     const text = buildMessage();
-    const subject = "Weekly Schedule – " + document.getElementById('weekRange').textContent;
+    const subject = "Dad's Weekly Schedule – " + document.getElementById('weekRange').textContent;
     const mailto = "mailto:" + encodeURIComponent(RECIPIENT_EMAILS.join(",")) +
       "?subject=" + encodeURIComponent(subject) +
       "&body=" + encodeURIComponent(text);

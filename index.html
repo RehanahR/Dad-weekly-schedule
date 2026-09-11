@@ -190,9 +190,9 @@
       <div class="opt"><input type="radio" name="sat" value="No" id="satNo" onchange="toggle('sat')"><label for="satNo">No</label></div>
     </div>
     <div class="details" id="satDetails">
-      <div class="field"><label>What is it</label><input type="text" id="satWhat" placeholder="e.g. Regional competition"></div>
-      <div class="field"><label>Where</label><input type="text" id="satWhere" placeholder="e.g. Leisure centre"></div>
-      <div class="field"><label>Timing</label><input type="text" id="satTime" placeholder="e.g. 9am–1pm"></div>
+      <div class="field"><label>Event</label><input type="text" id="satWhat" placeholder="e.g. Nationals"></div>
+      <div class="field"><label>Location</label><input type="text" id="satWhere" placeholder="e.g. Basingstoke"></div>
+      <div class="field"><label>Timing</label><input type="text" id="satTime" placeholder="e.g. 9am–6pm"></div>
     </div>
   </div>
 
@@ -206,14 +206,13 @@
       <div class="opt"><input type="radio" name="sun" value="No" id="sunNo" onchange="toggle('sun')"><label for="sunNo">No</label></div>
     </div>
     <div class="details" id="sunDetails">
-      <div class="field"><label>What is it</label><input type="text" id="sunWhat" placeholder="e.g. Grading"></div>
-      <div class="field"><label>Where</label><input type="text" id="sunWhere" placeholder="e.g. Sports hall"></div>
+      <div class="field"><label>Event</label><input type="text" id="sunWhat" placeholder="e.g. Grading"></div>
+      <div class="field"><label>Location</label><input type="text" id="sunWhere" placeholder="e.g. Cambridge"></div>
       <div class="field"><label>Timing</label><input type="text" id="sunTime" placeholder="e.g. 2pm–4pm"></div>
     </div>
   </div>
 
   <button id="sendBtn" onclick="sendResponses()">Send responses</button>
-  <div class="note">Opens Mail with the answers pre-filled, addressed to both of you.</div>
 </div>
 
 <script>
